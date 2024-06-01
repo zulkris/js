@@ -1,0 +1,17 @@
+version: '2.4'
+services:
+
+  node:
+    container_name: node
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+      args:
+        - DOCKER_UID_GID=${DOCKER_UID_GID}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.hotlinks.rule=Host(`node.local`)"
+      - "traefik.http.routers.hotlinks.entrypoints=web"
+    volumes:
+      - "${PROJECT_ROOT}:${SERVICE_DIR}"
+

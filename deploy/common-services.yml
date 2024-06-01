@@ -1,0 +1,38 @@
+version: '2.4'
+services:
+  traefik:
+    image: traefik:v2.4
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.hot.local`)"
+      - "traefik.http.routers.traefik.entrypoints=web"
+      - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+
+  php:
+    build:
+      context: .
+      dockerfile: ./deploy/dev/Dockerfile
+      args:
+        - UID=${UID}
+        - GID=${GID}
+        - ENABLE_XDEBUG=${ENABLE_XDEBUG}
+    restart: unless-stopped
+    tty: true
+
+  redis:
+    image: redis:3-alpine
+    ports:
+      - "6379:6379"
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    restart: unless-stopped
